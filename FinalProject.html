@@ -1,0 +1,477 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media</title>
+    <script src="../../../node_modules/axios/dist/axios.min.js"></script>
+    <script src="../../../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <script src="Functions.js"></script>
+    <link rel="stylesheet" href="../../../node_modules/bootstrap-icons/font/bootstrap-icons.css">
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+</head>
+
+<style>
+    .tags {
+        background-color: gray;
+        color: aliceblue;
+        border-radius: 40%;
+        padding: 8px;
+        display: inline;
+        font-size: smaller;
+    }
+
+    #Alert {
+        position: fixed;
+        top: 10px;
+        right: 0px;
+        left: 0px;
+        margin: auto;
+        z-index: 10;
+        width: 30%;
+    }
+
+    #loaderdiv {
+        visibility: hidden;
+        position: fixed;
+        left: 0px;
+        right: 0px;
+        bottom: 0px;
+        top: 0px;
+        margin: auto;
+        padding: 20px;
+        background-color: rgb(136 136 133 / 50%);
+        width: 90px;
+        height: 90px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 20px;
+    }
+
+    .loader {
+        --dim: 2.5rem;
+        width: var(--dim);
+        height: var(--dim);
+        animation: spin988 2s linear infinite;
+    }
+
+    .loader .circle {
+        --color: #333;
+        --dim: 1rem;
+        width: var(--dim);
+        height: var(--dim);
+        background-color: var(--color);
+        border-radius: 50%;
+        position: absolute;
+    }
+
+    .loader .circle:nth-child(1) {
+        top: 0;
+        left: 0;
+    }
+
+    .loader .circle:nth-child(2) {
+        top: 0;
+        right: 0;
+    }
+
+    .loader .circle:nth-child(3) {
+        bottom: 0;
+        left: 0;
+    }
+
+    .loader .circle:nth-child(4) {
+        bottom: 0;
+        right: 0;
+    }
+
+    @keyframes spin988 {
+        0% {
+            transform: scale(1) rotate(0);
+        }
+
+        20%,
+        25% {
+            transform: scale(1.3) rotate(90deg);
+        }
+
+        45%,
+        50% {
+            transform: scale(1) rotate(180deg);
+        }
+
+        70%,
+        75% {
+            transform: scale(1.3) rotate(270deg);
+        }
+
+        95%,
+        100% {
+            transform: scale(1) rotate(360deg);
+        }
+    }
+
+    #addpost {
+        position: fixed;
+        bottom: 50px;
+        right: 8%;
+        width: 60px;
+        height: 60px;
+        font-size: 35px;
+        padding-top: 0px;
+    }
+
+    .post:hover {
+        box-shadow: 0px 1px 5px 0.5px black !important;
+    }
+</style>
+
+
+<body>
+    <!-- Modals -->
+
+    <!-- Login modal -->
+    <div class="modal fade" id="LoginModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Login</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+
+                        <label for="recipient-name" class="col-form-label">Username</label>
+                        <div class="mb-3 input-group">
+                            <i class="bi bi-person-fill input-group-text"></i>
+                            <input type="text" class="form-control" id="username">
+                        </div>
+
+                        <label for="message-text" class="col-form-label">Password:</label>
+                        <div class="mb-3 input-group">
+                            <i class="bi bi-lock-fill input-group-text"></i>
+                            <input type="password" class="form-control" id="pwd">
+                        </div>
+                    </form>
+                    <span style="text-align: center; font-size: small;" class="text-danger fw-light ms-2"
+                        id="error"></span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-warning" onclick="login()">Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register modal -->
+    <div class="modal fade" id="RegisterModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Register</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-4">
+                            <label for="formFile" class="form-label">Choose an image for post</label>
+                            <input class="form-control" type="file" id="reg-img">
+                        </div>
+                        <div class="mb-3">
+                            <label for="recipient-name" class="col-form-label">Name</label>
+                            <input type="text" class="form-control" id="reg-name" placeholder="Nawaf">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="recipient-name" class="col-form-label">Username</label>
+                            <input type="text" class="form-control" id="reg-username" placeholder="Nawaf@gmail.com">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="message-text" class="col-form-label">Password:</label>
+                            <input type="password" class="form-control" id="reg-pwd">
+                        </div>
+                    </form>
+                    <span style="text-align: center; font-size: small;" class="text-danger fw-light ms-2"
+                        id="reg-error"></span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-warning" onclick="Register()">Register</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update post modal -->
+    <div class="modal fade" id="UpdatePostModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Edit your post</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form>
+                        <div class="form-floating">
+
+                            <textarea class="form-control" placeholder="Body" id="UpdatePost-body"
+                                style="height: 100px;"></textarea>
+                            <label id="body-label" for="UpdatePost-body">Write something.</label>
+                        </div>
+                    </form>
+                    <span style="text-align: center; font-size: small;" class="text-danger fw-light ms-2"
+                        id="upd-error"></span>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-warning" onclick="EditPost(`home`)">Edit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add post modal -->
+    <div class="modal fade" id="addpostModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Add new post</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3 form-floating">
+                            <input type="text" class="form-control" id="add-title" placeholder="Post Title">
+                            <label for="add-title">Post title</label>
+                        </div>
+
+                        <div class="form-floating">
+                            <textarea class="form-control mb-4" placeholder="Write something" id="add-body"></textarea>
+                            <label for="floatingTextarea">Body</label>
+                        </div>
+                    </form>
+                    <span style="text-align: center; font-size: small;" class="text-danger fw-light ms-2"
+                        id="addpost-error"></span>
+                </div>
+
+                <div class="modal-footer">
+                    <div class="input-group" style="position: absolute; left: 15px; width: 48%; bottom: 13px;">
+                        <input class="form-control ChooseImg" type="file" id="add-img">
+                    </div>
+
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-warning" onclick="createpost()">Publish</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Success alert -->
+    <div class="show fade" id="Alert"></div>
+
+    <!-- Top navigation -->
+    <div class="container d-flex justify-content-center">
+        <div class="col-9">
+            <nav class="navbar navbar-expand-lg bg-body-tertiary shadow rounded pt-3">
+                <div class="container-fluid">
+                    <img src="test logo.png" class="navbar-brand" style="width: 5%; min-width: 50px; cursor: pointer;"
+                        alt="" onclick="showtimeline()">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page" href="FinalProject.html"
+                                    onclick="showtimeline()">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="ProfilePage.html">Profile</a>
+                            </li>
+                        </ul>
+
+                        <div class="d-flex w-100 justify-content-end">
+                            <!-- For New user -->
+                            <button class="btn btn-outline-dark mx-2" data-bs-toggle="modal"
+                                data-bs-target="#LoginModal" id="TopLogin">Login</button>
+                            <button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#RegisterModal"
+                                id="TopReg">Register</button>
+                            <!-- For Logged in user -->
+                            <img class="rounded-circle me-2" style="width: 35px; height: 35px;" src="test logo.png"
+                                alt="" id="TopUserImg">
+                            <span id="TopUsername" class="mt-1 me-3 fw-medium"></span>
+                            <button class="btn btn-outline-danger" style="display: none;" id="TopLogout"
+                                onclick="logout()">Logout</button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+
+    <!-- Content -->
+    <div class="container" style="height: 1000px;">
+
+        <!-- Posts -->
+        <div class="container d-flex justify-content-center mt-5">
+            <div id="posts" class="col-9">
+
+                <!-- Post -->
+                <div class="card shadow-sm" style="margin-bottom: 30px;">
+                    <div class="card-header  d-flex flex-wrap flex-lg-row">
+                        <!-- user image -->
+                        <img src="test logo.png" alt="" id="userimage" style="width: 40px;"
+                            class="rounded-circle border border-1 position-absolute">
+                        <!-- username -->
+                        <b id="username" class="mx-2 position-absolute" style="left: 60px; top: 14px;">Featured</b>
+                        <div class="d-flex justify-content-end w-100">
+                            <button type="button" class="btn btn-outline-secondary" onclick="editpost()">Edit</button>
+                            <button type="button" class="btn btn-outline-danger ms-3"
+                                onclick="deletepost()">Delete</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Post image -->
+                        <img src="../../hasbulla.jpg" alt="" class="w-100 bg-light-subtle"
+                            style="max-height: 500px; object-fit:contain;" id="postimg">
+                        <!-- Post time -->
+                        <span id="posttime" class="fw-lighter fs-6 d-block text-end mx-3">2 minute ago</span>
+                        <!-- Post title -->
+                        <h5 class="card-title" id="PostTitle">Special title treatment</h5>
+                        <!-- Post body -->
+                        <p class="card-text" id="PostBody">With supporting text below as a natural lead-in to additional
+                            content.</p>
+                        <hr>
+                        <!-- Comments -->
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor"
+                                class="bi bi-pen mb-1" viewBox="0 0 16 16">
+                                <path
+                                    d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001zm-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708l-1.585-1.585z" />
+                            </svg>
+                            <span>3 Comments</span>
+
+                            <div id="tags" style="display: inline;">
+                                <span id="tag" class="tags fw-lighter ms-3">Sport</span>
+                            </div>
+                        </div>
+                        <hr>
+                        <div id="CommentsSection" class="p-4 rounded-3 bg-dark text-white">
+                            <div class="mb-5">
+                                <img src="test logo.png" class="rounded-circle me-2 border border-white bg-white"
+                                    style="width: 35px; height: 35px;" id="CS_UserImg" alt="">
+                                <span id="CS_UserName" class="text-white fw-lighter fs-6 position-relative"
+                                    style=" top:32px; right: 50px;">Nawaf</span>
+                                <span id="CS_UserComment"
+                                    class="p-1 rounded bg-warning text-dark fw-medium position-relative"
+                                    style="right: 38px; top: 2px;"> hello</span>
+                            </div>
+                            <div class="input-group mt-5">
+                                <input type="text" class="form-control" id="CS_Input" placeholder="Write Something."
+                                    aria-label="Recipient's username" aria-describedby="button-addon2">
+                                <button class="btn btn-outline-warning" type="button" id="button-addon2"
+                                    onclick="PostComment()">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Add post button -->
+    <button class="btn btn-warning" id="addpost" data-bs-toggle="modal" data-bs-target="#addpostModal">+</button>
+
+    <div id="loaderdiv">
+        <div id="loading" class="loader">
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+        </div>
+    </div>
+
+</body>
+
+
+<script>
+    let Scrollable = true // To indicate the location of user so that the page won't show posts after scrolling
+    let CurrentPage = 1
+    let LastPage = 1
+    let counter = 0;
+
+    // Getting new Posts after user scrolls
+    window.addEventListener("scroll", () => {
+        if (Scrollable == true) {
+            const endOfPage = window.innerHeight + window.pageYOffset >= document.body.scrollHeight;
+
+            if (endOfPage && CurrentPage < LastPage) {
+                CurrentPage = CurrentPage + 1
+                showtimeline(CurrentPage, false)
+                LastPage = LastPage + 1
+            }
+        }
+    })
+
+    // Add post 
+    async function createpost() {
+
+        // Assign to local values
+        const title = document.getElementById("add-title").value
+        const body = document.getElementById("add-body").value
+        const img = document.getElementById("add-img").files[0]
+
+        // Reset body input
+        if (body == "") {
+            document.getElementById("add-body").classList.add("is-invalid")
+            document.getElementById("addpost-error").innerHTML = "Body is missing"
+            return
+        }
+
+        const tok = localStorage.getItem("token")
+        let formData = new FormData()
+
+        if (title != null)
+            formData.append("title", title)
+
+        if (img != null)
+            formData.append("image", img)
+
+
+        formData.append("body", body)
+
+
+        url = baseurl + "/posts"
+
+        axios.post(url, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+                "authorization": `Bearer ${tok}`
+            }
+        }).then((response) => {
+            const modal = document.getElementById("addpostModal")
+            const modalInstance = bootstrap.Modal.getInstance(modal)
+            modalInstance.hide()
+            ShowAlert("Post added successfully")
+            showtimeline()
+        }).catch((error) => {
+            document.getElementById("addpost-error").innerHTML = error.response.data.message
+        });
+    }
+
+
+    showtimeline()
+</script>
+
+</html>

@@ -1,0 +1,388 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile page</title>
+    <script src="../../../node_modules/axios/dist/axios.min.js"></script>
+    <script src="../../../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <script src="Functions.js"></script>
+</head>
+
+<style>
+    #Alert {
+        position: fixed;
+        top: 10px;
+        right: 0px;
+        left: 0px;
+        margin: auto;
+        z-index: 10;
+        width: 30%;
+    }
+
+    #editprof {
+        align-items: center;
+        background-color: transparent;
+        color: #fff;
+        cursor: pointer;
+        display: flex;
+        font-family: ui-sans-serif, system-ui, -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.5;
+        text-decoration: none;
+        text-transform: uppercase;
+        outline: 0;
+        border: 0;
+        padding: 1rem;
+    }
+
+    #editprof:before {
+        border: solid 1.5px goldenrod;
+        border-radius: 8px;
+        background-color: #fff;
+        content: "";
+        display: inline-block;
+        height: 1px;
+        margin-right: 10px;
+        transition: all .42s cubic-bezier(.25, .8, .25, 1);
+        width: 0;
+    }
+
+    #editprof:hover:before {
+        background-color: #fff;
+        width: 3rem;
+    }
+
+    .post:hover {
+        box-shadow: 0px 1px 5px 0.5px black !important;
+    }
+
+    #loaderdiv {
+        visibility: hidden;
+        position: fixed;
+        left: 0px;
+        right: 0px;
+        bottom: 0px;
+        top: 0px;
+        margin: auto;
+        padding: 20px;
+        background-color: rgb(136 136 133 / 50%);
+        width: 90px;
+        height: 90px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 20px;
+    }
+
+    .loader {
+        --dim: 2.5rem;
+        width: var(--dim);
+        height: var(--dim);
+        position: absolute;
+        left: 0px;
+        right: 0px;
+        margin: auto;
+        animation: spin988 2s linear infinite;
+    }
+
+    .loader .circle {
+        --color: #333;
+        --dim: 1rem;
+        width: var(--dim);
+        height: var(--dim);
+        background-color: var(--color);
+        border-radius: 50%;
+        position: absolute;
+    }
+
+    .loader .circle:nth-child(1) {
+        top: 0;
+        left: 0;
+    }
+
+    .loader .circle:nth-child(2) {
+        top: 0;
+        right: 0;
+    }
+
+    .loader .circle:nth-child(3) {
+        bottom: 0;
+        left: 0;
+    }
+
+    .loader .circle:nth-child(4) {
+        bottom: 0;
+        right: 0;
+    }
+
+    @keyframes spin988 {
+        0% {
+            transform: scale(1) rotate(0);
+        }
+
+        20%,
+        25% {
+            transform: scale(1.3) rotate(90deg);
+        }
+
+        45%,
+        50% {
+            transform: scale(1) rotate(180deg);
+        }
+
+        70%,
+        75% {
+            transform: scale(1.3) rotate(270deg);
+        }
+
+        95%,
+        100% {
+            transform: scale(1) rotate(360deg);
+        }
+    }
+</style>
+
+<body>
+    <!-- Modals -->
+
+    <!-- Login modal -->
+    <div class="modal fade" id="LoginModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Login</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="recipient-name" class="col-form-label">Username</label>
+                            <input type="text" class="form-control" id="username" placeholder="Nawaf">
+                        </div>
+                        <div class="mb-3">
+                            <label for="message-text" class="col-form-label">Password:</label>
+                            <input type="password" class="form-control" id="pwd">
+                        </div>
+                    </form>
+                    <span style="text-align: center; font-size: small;" class="text-danger fw-light ms-2"
+                        id="error"></span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-warning" onclick="login()">Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register modal -->
+    <div class="modal fade" id="RegisterModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Register</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-4">
+                            <label for="formFile" class="form-label">Choose an image for post</label>
+                            <input class="form-control" type="file" id="reg-img">
+                        </div>
+                        <div class="mb-3">
+                            <label for="recipient-name" class="col-form-label">Name</label>
+                            <input type="text" class="form-control" id="reg-name" placeholder="Nawaf">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="recipient-name" class="col-form-label">Username</label>
+                            <input type="text" class="form-control" id="reg-username" placeholder="Nawaf@gmail.com">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="message-text" class="col-form-label">Password:</label>
+                            <input type="password" class="form-control" id="reg-pwd">
+                        </div>
+                    </form>
+                    <span style="text-align: center; font-size: small;" class="text-danger fw-light ms-2"
+                        id="reg-error"></span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-warning" onclick="Register()">Register</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Profile modal -->
+    <div class="modal fade" id="UpdateProfileModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Update your profile information</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="recipient-name" class="col-form-label">New username</label>
+                            <input type="text" class="form-control" id="updateprof-name" placeholder="Nawaf">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="message-text" class="col-form-label">New Password</label>
+                            <input type="password" class="form-control" id="updateprof-pwd">
+                        </div>
+                    </form>
+                    <span style="text-align: center; font-size: small;" class="text-danger fw-light ms-2"
+                        id="updateprof-error"></span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-warning" onclick="UpdateProfile()">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update post modal -->
+    <div class="modal fade" id="UpdatePostModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Edit your post</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form>
+                        <div class="form-floating">
+
+                            <textarea class="form-control" placeholder="Body" id="UpdatePost-body"
+                                style="height: 100px;"></textarea>
+                            <label id="body-label" for="UpdatePost-body">Write something.</label>
+                        </div>
+                    </form>
+                    <span style="text-align: center; font-size: small;" class="text-danger fw-light ms-2"
+                        id="upd-error"></span>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-warning" onclick="EditPost(`prof`)">Edit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert -->
+    <div class="show fade" id="Alert"></div>
+
+    <!-- Top navigation -->
+    <div class="container d-flex justify-content-center">
+        <div class="col-9">
+            <nav class="navbar navbar-expand-lg bg-body-tertiary shadow rounded pt-3">
+                <div class="container-fluid">
+                    <img src="test logo.png" class="navbar-brand" style="width: 5%; min-width: 50px; cursor: pointer;"
+                        alt="" onclick="showtimeline()">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" aria-current="page" href="FinalProject.html">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="ProfilePage.html">Profile</a>
+                            </li>
+                        </ul>
+
+                        <div class="d-flex w-100 justify-content-end">
+                            <!-- For New user -->
+                            <button class="btn btn-outline-dark mx-2" data-bs-toggle="modal"
+                                data-bs-target="#LoginModal" id="TopLogin">Login</button>
+                            <button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#RegisterModal"
+                                id="TopReg">Register</button>
+                            <!-- For Logged in user -->
+                            <img class="rounded-circle me-2" style="width: 35px; height: 35px;" src="test logo.png"
+                                alt="" id="TopUserImg">
+                            <span id="TopUsername" class="mt-1 me-3 fw-medium"></span>
+                            <button class="btn btn-outline-danger" style="display: none;" id="TopLogout"
+                                onclick="logout()">Logout</button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <div class="position-absolute container d-flex justify-content-center mt-5" style="left: 48px;">
+        <div class="container col-9 p-3 d-flex justify-content-start"
+            style="height: 10vh; padding-left: 5% !important;">
+            <button id="editprof" data-bs-toggle="modal" data-bs-target="#UpdateProfileModal" onclick="">
+                Edit
+            </button>
+        </div>
+    </div>
+
+    <!-- Black box profile information -->
+    <div class="container d-flex justify-content-center mt-5 text-white fw-bolder fs-5">
+        <div class="container p-3 col-9 bg-dark rounded shadow d-flex flex-wrap flex-lg-row justify-content-evenly align-items-lg-center"
+            style="height: 60vh;">
+            <div class="d-flex justify-content-center mt-2" style="width: 100%; height: 30%;">
+                <img src="test logo.png" alt="" class="rounded border border-white bg-white" id="prf_userimg"
+                    style="height: 100%;">
+            </div>
+
+            <span id="prf_username" class="bg-warning text-dark fs-5 fw-bolder rounded"
+                style="padding:3%; align-self: center;">Username: </span>
+            <span id="prf_name" class="bg-warning text-dark fs-5 fw-bolder rounded"
+                style="padding:3%; align-self: center;">Name: </span>
+            <span id="prf_email" class="bg-warning text-dark fs-5 fw-bolder rounded"
+                style="padding:3%; align-self: center;">Email: </span>
+
+            <div class="w-100 d-flex justify-content-evenly align-items-lg-center">
+                <span id="prf_userposts" class="bg-warning text-dark fs-5 fw-bolder rounded"
+                    style="padding:8%; align-self: center;">Posts: </span>
+                <span id="prf_usercomments" class="bg-warning text-dark fs-5 fw-bolder rounded"
+                    style="padding:8%; align-self: center;">Comments: </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-center">
+        <span class="fs-3 fw-bolder col-8 mt-5">Your Posts</span>
+    </div>
+
+    <div class="container d-flex justify-content-center mt-5">
+        <div id="userposts" class="col-9 d-flex flex-column-reverse">
+        </div>
+    </div>
+
+    </div>
+
+    <div id="loaderdiv">
+        <div id="loading" class="loader">
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+        </div>
+    </div>
+
+</body>
+
+<script>
+    SetUpUi()
+    ShowProfileInfo()
+    ShowUserPosts()
+</script>
+
+</html>
