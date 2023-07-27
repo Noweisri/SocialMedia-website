@@ -248,40 +248,56 @@ async function ShowPost(id) {
     SetUpUi()
     if (document.getElementById("posts") != null)
         document.getElementById("posts").innerHTML = ""
+    else {
+        document.getElementById("userposts").innerHTML = ""
+        document.getElementById("yourposts").style.display = "none"
+    }
+
 
     url = baseurl + "/posts/" + id
 
     let response = await axios.get(url)
+    let post = response.data.data
 
     content =
         `
         <!-- Post -->
-        <Span class="text-start fw-bolder fs-2 ms-3 mb-5">${response.data.data.author.name}'s Post</span>
-            <div class="card shadow-sm" id = "post" style="margin-bottom: 30px;">
-                <div class="card-header">
+        <Span class="text-start fw-bolder fs-2 ms-3 mb-5 col-8 mt-5" id="ph">${post.author.name}'s Post</span>
+            <div class="card shadow-sm mt-2" id = "post" style="margin-bottom: 30px;">
+                <div class="card-header d-flex flex-wrap flex-lg-row" style="height: 54px;" onclick="ShowPost(${post.id})">
                     <!-- user image -->
-                    <img src="${response.data.data.author.profile_image}" alt="" id="userimage" style="width: 40px; height:40px;" class="rounded-circle border border-1">
+                    <div id="userimage-${post.id}">
+                        <i class="bi bi-person-fill" style="font-size:2.3em;" class="rounded-circle border border-1 position-absolute"></i>
+                    </div>
                     <!-- username -->
-                    <b id="username" class="mx-2 ">${response.data.data.author.username}</b>
+                    <b id="username" class="mx-2 position-absolute" style="left: 60px; top: 14px;">${post.author.username}</b>
                 </div>
-                <div class="card-body">
+
+                <div id="Card-Header-${post.id}" class="position-absolute d-flex justify-content-end w-100" style="top:8px; right:15px;">       
+                </div>
+
+                <div class="card-body" onclick="ShowPost(${post.id})">
                     <!-- Post image -->
-                    <img src="${response.data.data.image}" alt="" class="w-100 bg-light-subtle" style="max-height: 500px; object-fit:contain;" id="postimg">
-                    <!-- Post time -->
-                    <span id="posttime" class="fw-lighter fs-6 d-block text-end mx-3">${response.data.data.created_at}</span>
+                <div id="postimg-${post.id}">
+                        
+            </div>
+            <!-- Post time -->
+                    <span id="posttime" class="fw-lighter fs-6 d-block text-end mx-3">${post.created_at}</span>
                     <!-- Post title -->
-                    <h5 class="card-title" id="PostTitle">${response.data.data.title}</h5>
+                    <div id="posttitle-${post.id}">
+                                
+                    </div>
                     <!-- Post body -->
-                    <p class="card-text" id="PostBody">${response.data.data.body}</p>
+                    <p class="card-text" id="PostBody">${post.body}</p>
                     <hr>
                     <!-- Comments -->
                     <div>
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-pen mb-1" viewBox="0 0 16 16">
                             <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001zm-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708l-1.585-1.585z"/>
                             </svg>
-                        <span class="me-3">${response.data.data.comments_count} Comments</span>
+                        <span class="me-3">${post.comments_count} Comments</span>
 
-                        <div id="post-tags-${response.data.data.id}" style="display:inline; font-size:small;">
+                        <div id="post-tags-${post.id}" style="display:inline; font-size:small;">
 
                         </div>
                         <hr>
@@ -298,24 +314,48 @@ async function ShowPost(id) {
                         </div>
                     </div>
                 </div>
-
             </div>
     `
 
     if (document.getElementById("posts") != null)
         document.getElementById("posts").innerHTML = content
-    else
+    else {
         document.getElementById("userposts").innerHTML = content
+        document.getElementById("yourpostsdiv").innerHTML = `<Span class="text-start fw-bolder fs-2 ms-3 col-8 mt-5">${post.author.name}'s Post</span>`
+        document.getElementById("ph").style.display = "none"
+    }
 
-    const CurrentPostTag = "post-tags-" + response.data.data.id
-    const Comments = response.data.data.comments
+    // if the user has no image don't show it
+    userimag = "userimage-" + post.id
+    if (Object.keys(post.author.profile_image).length != 0)
+        document.getElementById(userimag).innerHTML = `<img src="${post.author.profile_image}" alt="" style="width: 40px; height:40px" class="rounded-circle border border-1 position-absolute">`
+
+
+    // If the post has no image don't show it
+    postimg = "postimg-" + post.id
+    if (Object.keys(post.image).length != 0) {
+        console.log()
+        document.getElementById(postimg).innerHTML += `<img src="${post.image}" alt="" class="w-100 bg-light-subtle" style="max-height: 500px; object-fit:contain;" id="postimg">`
+    }
+
+    // If the post has no title don't show it
+    posttitle = "posttitle-" + post.id
+    if (post.title != null) {
+        document.getElementById(posttitle).innerHTML += `<h5 class="card-title" id="PostTitle">${post.title}</h5>`
+    }
+
+
+
+    const CurrentPostTag = "post-tags-" + post.id
+    const Comments = post.comments
 
     // Loop showing tags
-    for (tag of response.data.data.tags) {
+    for (tag of post.tags) {
         content = `<span class="tags ms-3 rounded">${tag.name}</span>`
         document.getElementById(CurrentPostTag).innerHTML += content
     }
 
+    // Loop showing Comments section
     document.getElementById("CommentsSection").innerHTML = ""
     for (comment of Comments) {
         content =
@@ -326,6 +366,7 @@ async function ShowPost(id) {
                 </div>`
         document.getElementById("CommentsSection").innerHTML += content
     }
+    // Adding input bar in the last
     document.getElementById("CommentsSection").innerHTML += `
             <div class="input-group mt-5">
                 <input type="text" class="form-control" id="CS_Input_${id}" placeholder="Write Something." aria-label="Recipient's username" aria-describedby="button-addon2">
@@ -403,6 +444,7 @@ async function ShowProfileInfo() {
     document.getElementById("prf_email").innerHTML = "Email: " + response.data.data.email
     document.getElementById("prf_userposts").innerHTML = "Posts: " + response.data.data.posts_count
     document.getElementById("prf_usercomments").innerHTML = "Comments: " + response.data.data.comments_count
+    document.getElementById("yourposts").style.display = "block"
 
     ShowLoader(false)
 }
