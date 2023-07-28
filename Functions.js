@@ -14,6 +14,7 @@ function SetUpUi() {
         document.getElementById("TopLogout").style.display = "none"
         document.getElementById("TopUsername").style.display = "none"
         document.getElementById("TopUserImg").style.display = "none"
+        document.getElementById("profilepagebtn").style.visibility = "hidden"
         if (document.getElementById("addpost") != null) {
             document.getElementById("addpost").style.visibility = "hidden"
         }
@@ -21,6 +22,7 @@ function SetUpUi() {
     } else {
         document.getElementById("TopLogin").style.display = "none"
         document.getElementById("TopReg").style.display = "none"
+        document.getElementById("profilepagebtn").style.visibility = "visible"
         document.getElementById("TopLogout").style.display = "block"
         document.getElementById("TopUsername").style.display = "inline"
         document.getElementById("TopUsername").innerHTML = JSON.parse(localStorage.getItem("user")).name
@@ -33,7 +35,7 @@ function SetUpUi() {
 }
 
 // Showing alert for user when signing in
-function ShowAlert(msg) {
+function ShowAlert(msg, type = "success") {
 
     const alertPlaceholder = document.getElementById('Alert')
     const appendAlert = (message, type) => {
@@ -47,11 +49,11 @@ function ShowAlert(msg) {
         alertPlaceholder.append(wrapper)
     }
 
-    appendAlert(msg, 'success');
+    appendAlert(msg, type);
 
     setTimeout(() => {
         document.getElementById("Alert").style.display = "none"
-    }, 2000)
+    }, 3000)
 
 }
 
@@ -131,6 +133,7 @@ function logout() {
         localStorage.removeItem("token")
         localStorage.removeItem("user")
         SetUpUi()
+        window.open("index.html")
         ShowAlert("Logged out successfully")
         console.log("Logout completed!")
     }
@@ -264,7 +267,7 @@ async function ShowPost(id) {
         <!-- Post -->
         <Span class="text-start fw-bolder fs-2 ms-3 mb-5 col-8 mt-5" id="ph">${post.author.name}'s Post</span>
             <div class="card shadow-sm mt-2" id = "post" style="margin-bottom: 30px;">
-                <div class="card-header d-flex flex-wrap flex-lg-row" style="height: 54px;" onclick="ShowPost(${post.id})">
+                <div class="card-header d-flex flex-wrap flex-lg-row" style="height: 54px;">
                     <!-- user image -->
                     <div id="userimage-${post.id}">
                         <i class="bi bi-person-fill" style="font-size:2.3em;" class="rounded-circle border border-1 position-absolute"></i>
@@ -276,7 +279,7 @@ async function ShowPost(id) {
                 <div id="Card-Header-${post.id}" class="position-absolute d-flex justify-content-end w-100" style="top:8px; right:15px;">       
                 </div>
 
-                <div class="card-body" onclick="ShowPost(${post.id})">
+                <div class="card-body">
                     <!-- Post image -->
                 <div id="postimg-${post.id}">
                         
@@ -309,7 +312,7 @@ async function ShowPost(id) {
                             </div>
                             <div class="input-group mt-5">
                                 <input type="text" class="form-control" id="CS_Input_${id}" placeholder="Write Something." aria-label="Recipient's username" aria-describedby="button-addon2">
-                                <button class="btn btn-outline-warning" type="button" id="button-addon2" onclick="PostComment(${id})">Send</button>
+                                <button class="btn btn-outline-warning" type="button" id="button-addon2" onclick="PostComment(${id} , "CS_Input_${id}" )">Send</button>
                             </div>
                         </div>
                     </div>
@@ -370,17 +373,25 @@ async function ShowPost(id) {
     document.getElementById("CommentsSection").innerHTML += `
             <div class="input-group mt-5">
                 <input type="text" class="form-control" id="CS_Input_${id}" placeholder="Write Something." aria-label="Recipient's username" aria-describedby="button-addon2">
-                <button class="btn btn-outline-warning" type="button" id="button-addon2" onclick="PostComment(${id})">Send</button>
+                <button class="btn btn-outline-warning" type="button" id="button-addon2" onclick="PostComment(${id} , CS_Input_${id} )">Send</button>
             </div>`
 }
 
 // Post Comment function
-async function PostComment(id) {
+async function PostComment(id, inputID) {
 
-    if (localStorage.getItem("user") == null) {
-        ShowAlert("Sorry, but to post a comment you have to be signed in.")
+    // Making sure that the user is logged in
+    if (localStorage.getItem("user") == null)
+        return ShowAlert("Sorry, but you have to be logged in", "danger")
+
+    // Making sure that the user typed something
+    if (document.getElementById(`CS_Input_${id}`).value == "") {
+        document.getElementById(inputID.id).classList.add("is-invalid")
         return
     }
+
+    document.getElementById(inputID.id).classList.remove("is-invalid")
+
 
     let url = baseurl + "/posts/" + id + "/comments"
 
@@ -463,6 +474,8 @@ function ShowUserPosts() {
 
         // Hide loading icon when showing posts
         document.getElementById("loading").style.display = "none"
+
+        document.getElementById("userposts").innerHTML = ""
 
         for (post of MyPosts) {
             let con =
